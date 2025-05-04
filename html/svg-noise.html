@@ -1,0 +1,13 @@
+However, this isn’t particularly nice because the noise is too muddled. We need to fray it and make it grainier. We can do that by…
+
+Boosting the brightness and contrast
+Adding a CSS filter makes the noise more stark, pushing the most faded colors towards white or black. The filter applies to the entire <div>, so the leftmost blue is a different blue than the pure blue we started with.
+
+.noise {
+  /* ... */
+  background: 
+    linear-gradient(to right, blue, transparent), 
+    url(https://grainy-gradients.vercel.app/noise.svg);
+  filter: contrast(170%) brightness(1000%);  
+}
+You can play around with how contrast and brightness affect the gradient. Boosting the brightness and contrast pushes out the muddled grays

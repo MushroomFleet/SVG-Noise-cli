@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG Noise with CSS Blending</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      background: #f5f5f7;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+    
+    h2 {
+      margin: 40px 0 15px;
+      font-size: 22px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+    }
+    
+    p {
+      margin-bottom: 15px;
+      max-width: 800px;
+    }
+    
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .demo-box {
+      height: 200px;
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .demo-label {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(255,255,255,0.8);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      z-index: 10;
+    }
+    
+    code {
+      background: #eee;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+    
+    pre {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 15px 0;
+      font-family: monospace;
+    }
+    
+    /* SVG Noise - create a data URI that will be used as a background image */
+    .noise-only {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+    }
+    
+    /* Basic gradient with SVG noise */
+    .basic-gradient {
+      background: 
+        linear-gradient(20deg, rebeccapurple, transparent), 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+    }
+    
+    /* CSS blending with a stacked div approach */
+    .isolate {
+      position: relative;
+      height: 100%;
+      isolation: isolate;
+    }
+    
+    .noise {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        linear-gradient(20deg, rebeccapurple, transparent), 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+    }
+    
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: moccasin;
+    }
+    
+    /* Different blend modes */
+    .blend-multiply .overlay {
+      mix-blend-mode: multiply;
+    }
+    
+    .blend-screen .overlay {
+      mix-blend-mode: screen;
+    }
+    
+    .blend-overlay .overlay {
+      mix-blend-mode: overlay;
+    }
+    
+    .blend-color .overlay {
+      mix-blend-mode: color;
+    }
+    
+    /* No isolation example */
+    .no-isolate {
+      position: relative;
+      height: 100%;
+      /* No isolation property */
+    }
+    
+    /* Background blend mode examples */
+    .bg-blend-multiply {
+      background: 
+        moccasin,
+        linear-gradient(20deg, rebeccapurple, transparent), 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      background-blend-mode: multiply;
+      filter: contrast(170%) brightness(1000%);
+    }
+    
+    .bg-blend-screen {
+      background: 
+        moccasin,
+        linear-gradient(20deg, rebeccapurple, transparent), 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      background-blend-mode: screen;
+      filter: contrast(170%) brightness(1000%);
+    }
+    
+    /* Multi-colored gradients with SVG noise */
+    .multi-color {
+      background: 
+        linear-gradient(to right, rgba(255, 0, 128, 0.7) 0%, rgba(255, 0, 128, 0) 50%),
+        linear-gradient(to right, rgba(0, 128, 255, 0) 50%, rgba(0, 128, 255, 0.7) 100%),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+    }
+    
+    .multi-color-blend {
+      position: relative;
+      isolation: isolate;
+    }
+    
+    .multi-color-blend::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: 
+        linear-gradient(to right, rgba(255, 0, 128, 0.7) 0%, rgba(255, 0, 128, 0) 50%),
+        linear-gradient(to right, rgba(0, 128, 255, 0) 50%, rgba(0, 128, 255, 0.7) 100%),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+    }
+    
+    .multi-color-blend::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: #f8f0fc;
+      mix-blend-mode: color;
+      opacity: 0.3;
+    }
+    
+    /* Different noise frequencies */
+    .fine-noise {
+      background: 
+        linear-gradient(20deg, rebeccapurple, transparent), 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+    }
+    
+    .coarse-noise {
+      background: 
+        linear-gradient(20deg, rebeccapurple, transparent), 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.4' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+    }
+    
+    /* SVG with embedded noise filter - alternative approach */
+    .svg-container {
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>SVG Noise with CSS Blending</h1>
+    
+    <p>
+      This demonstration shows how to use SVG noise with CSS blending to create grainy gradients
+      and control the colorful noise speckles that appear when using high contrast and brightness settings.
+    </p>
+    
+    <section>
+      <h2>Basic SVG Noise Examples</h2>
+      <p>
+        The SVG turbulence filter creates noise that, when enhanced with CSS filters, 
+        produces a grainy texture. When you zoom in, you'll notice it's made up of many colors.
+      </p>
+      
+      <div class="demo-grid">
+        <div class="demo-box noise-only">
+          <div class="demo-label">SVG Noise Only</div>
+        </div>
+        
+        <div class="demo-box basic-gradient">
+          <div class="demo-label">Gradient + SVG Noise</div>
+        </div>
+      </div>
+      
+      <pre>/* SVG Noise Only */
+.noise-only {
+  background-image: url("noise.svg");
+  filter: contrast(170%) brightness(1000%);
+}
+
+/* Basic gradient with SVG noise */
+.basic-gradient {
+  background: 
+    linear-gradient(20deg, rebeccapurple, transparent), 
+    url("noise.svg"); 
+  filter: contrast(170%) brightness(1000%);
+}</pre>
+    </section>
+    
+    <section>
+      <h2>CSS Blending with mix-blend-mode</h2>
+      <p>
+        We can control the colors in the noise by using an overlay div with <code>mix-blend-mode</code>.
+        This requires a specific HTML structure and CSS isolation.
+      </p>
+      
+      <pre><!-- HTML Structure -->
+&lt;div class="isolate"&gt;
+  &lt;div class="noise"&gt;&lt;/div&gt;
+  &lt;div class="overlay"&gt;&lt;/div&gt;
+&lt;/div&gt;</pre>
+      
+      <div class="demo-grid">
+        <div class="demo-box">
+          <div class="isolate blend-multiply">
+            <div class="noise"></div>
+            <div class="overlay"></div>
+          </div>
+          <div class="demo-label">mix-blend-mode: multiply</div>
+        </div>
+        
+        <div class="demo-box">
+          <div class="isolate blend-screen">
+            <div class="noise"></div>
+            <div class="overlay"></div>
+          </div>
+          <div class="demo-label">mix-blend-mode: screen</div>
+        </div>
+        
+        <div class="demo-box">
+          <div class="isolate blend-overlay">
+            <div class="noise"></div>
+            <div class="overlay"></div>
+          </div>
+          <div class="demo-label">mix-blend-mode: overlay</div>
+        </div>
+        
+        <div class="demo-box">
+          <div class="isolate blend-color">
+            <div class="noise"></div>
+            <div class="overlay"></div>
+          </div>
+          <div class="demo-label">mix-blend-mode: color</div>
+        </div>
+      </div>
+      
+      <pre>/* CSS */
+.isolate {
+  position: relative;
+  isolation: isolate; /* Creates a stacking context */
+}
+
+.noise {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(20deg, rebeccapurple, transparent), 
+    url("noise.svg");
+  filter: contrast(170%) brightness(1000%);
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: moccasin;
+  mix-blend-mode: multiply; /* Change this for different effects */
+}</pre>
+    </section>
+    
+    <section>
+      <h2>Understanding Isolation</h2>
+      <p>
+        The <code>isolation: isolate</code> property creates a new stacking context, 
+        which controls what elements get blended. Without it, the overlay would blend with the page background.
+      </p>
+      
+      <div class="demo-grid">
+        <div class="demo-box">
+          <div class="isolate blend-multiply">
+            <div class="noise"></div>
+            <div class="overlay"></div>
+          </div>
+          <div class="demo-label">With isolation: isolate</div>
+        </div>
+        
+        <div class="demo-box">
+          <div class="no-isolate blend-multiply">
+            <div class="noise"></div>
+            <div class="overlay"></div>
+          </div>
+          <div class="demo-label">Without isolation</div>
+        </div>
+      </div>
+    </section>
+    
+    <section>
+      <h2>Using background-blend-mode</h2>
+      <p>
+        An alternative approach is to use <code>background-blend-mode</code>, 
+        which allows blending multiple background layers without additional HTML elements.
+      </p>
+      
+      <div class="demo-grid">
+        <div class="demo-box bg-blend-multiply">
+          <div class="demo-label">background-blend-mode: multiply</div>
+        </div>
+        
+        <div class="demo-box bg-blend-screen">
+          <div class="demo-label">background-blend-mode: screen</div>
+        </div>
+      </div>
+      
+      <pre>/* Using background-blend-mode */
+.bg-blend-multiply {
+  background: 
+    moccasin,
+    linear-gradient(20deg, rebeccapurple, transparent), 
+    url("noise.svg");
+  background-blend-mode: multiply;
+  filter: contrast(170%) brightness(1000%);
+}</pre>
+    </section>
+    
+    <section>
+      <h2>Multi-colored Grainy Gradients</h2>
+      <p>
+        We can create transitions between different colored grainy sections 
+        by layering multiple gradients with strategic transparency.
+      </p>
+      
+      <div class="demo-grid">
+        <div class="demo-box multi-color">
+          <div class="demo-label">Multi-Color Gradient</div>
+        </div>
+        
+        <div class="demo-box multi-color-blend">
+          <div class="demo-label">With Additional Color Blending</div>
+        </div>
+      </div>
+      
+      <pre>/* Multi-Color Gradient */
+.multi-color {
+  background: 
+    linear-gradient(to right, rgba(255, 0, 128, 0.7) 0%, rgba(255, 0, 128, 0) 50%),
+    linear-gradient(to right, rgba(0, 128, 255, 0) 50%, rgba(0, 128, 255, 0.7) 100%),
+    url("noise.svg");
+  filter: contrast(170%) brightness(1000%);
+}
+
+/* With Additional Color Blending */
+.multi-color-blend {
+  position: relative;
+  isolation: isolate;
+}
+
+.multi-color-blend::before {
+  content: "";
+  position: absolute;
+  inset:://www.0;
+  background: 
+    linear-gradient(to right, rgba(255, 0, 128, 0.7) 0%, rgba(255, 0, 128, 0) 50%),
+    linear-gradient(to right, rgba(0, 128, 255, 0) 50%, rgba(0, 128, 255, 0.7) 100%),
+    url("noise.svg");
+  filter: contrast(170%) brightness(1000%);
+}
+
+.multi-color-blend::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #f8f0fc;
+  mix-blend-mode: color;
+  opacity: 0.3;
+}</pre>
+    </section>
+    
+    <section>
+      <h2>Adjusting Noise Frequency</h2>
+      <p>
+        Varying the <code>baseFrequency</code> parameter in the SVG filter 
+        allows you to control how fine or coarse the noise appears.
+      </p>
+      
+      <div class="demo-grid">
+        <div class="demo-box fine-noise">
+          <div class="demo-label">Fine Noise (0.9)</div>
+        </div>
+        
+        <div class="demo-box coarse-noise">
+          <div class="demo-label">Coarse Noise (0.4)</div>
+        </div>
+      </div>
+      
+      <pre>/* Fine Noise */
+.fine-noise {
+  background: 
+    linear-gradient(20deg, rebeccapurple, transparent), 
+    url("fine-noise.svg"); /* SVG with baseFrequency="0.9" */
+  filter: contrast(170%) brightness(1000%);
+}
+
+/* Coarse Noise */
+.coarse-noise {
+  background: 
+    linear-gradient(20deg, rebeccapurple, transparent), 
+    url("coarse-noise.svg"); /* SVG with baseFrequency="0.4" */
+  filter: contrast(170%) brightness(1000%);
+}</pre>
+    </section>
+    
+    <section>
+      <h2>Inline SVG Approach</h2>
+      <p>
+        Instead of using background images, you can also embed the SVG directly in your HTML
+        and apply filters and gradients to it.
+      </p>
+      
+      <div class="demo-grid">
+        <div class="demo-box svg-container">
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="embedNoise">
+                <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+              </filter>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="rebeccapurple" />
+                <stop offset="100%" stop-color="transparent" />
+              </linearGradient>
+            </defs>
+            <!-- First, draw the noise -->
+            <rect width="100%" height="100%" filter="url(#embedNoise)" />
+            <!-- Then draw the gradient on top with blend mode -->
+            <rect width="100%" height="100%" fill="url(#gradient)" style="mix-blend-mode: multiply;" />
+          </svg>
+          <div class="demo-label">Inline SVG with Filters</div>
+        </div>
+      </div>
+      
+      <pre>&lt;svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"&gt;
+  &lt;defs&gt;
+    &lt;filter id="embedNoise"&gt;
+      &lt;feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/&gt;
+    &lt;/filter&gt;
+    &lt;linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%"&gt;
+      &lt;stop offset="0%" stop-color="rebeccapurple" /&gt;
+      &lt;stop offset="100%" stop-color="transparent" /&gt;
+    &lt;/linearGradient&gt;
+  &lt;/defs&gt;
+  &lt;!-- First, draw the noise --&gt;
+  &lt;rect width="100%" height="100%" filter="url(#embedNoise)" /&gt;
+  &lt;!-- Then draw the gradient on top with blend mode --&gt;
+  &lt;rect width="100%" height="100%" fill="url(#gradient)" style="mix-blend-mode: multiply;" /&gt;
+&lt;/svg&gt;</pre>
+    </section>
+  </div>
+</body>
+</html>

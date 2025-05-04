@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced SVG Noise Gradient Techniques</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      background: #f5f5f7;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      margin-bottom: 20px;
+      font-size: 32px;
+      text-align: center;
+    }
+    
+    h2 {
+      margin: 40px 0 15px;
+      font-size: 24px;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 10px;
+    }
+    
+    p {
+      margin-bottom: 15px;
+    }
+    
+    .demo-section {
+      margin-bottom: 50px;
+    }
+    
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .demo-box {
+      height: 200px;
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .demo-label {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(255,255,255,0.8);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      z-index: 10;
+    }
+    
+    code {
+      background: #eee;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    
+    pre {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 15px 0;
+      font-family: monospace;
+    }
+    
+    /* Our base SVG noise background */
+    .svg-noise {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+    
+    /* 1. Multi-colored gradients */
+    .multi-colored-1 {
+      background: 
+        linear-gradient(to right, rgba(255, 0, 128, 0.9), rgba(255, 0, 128, 0)),
+        linear-gradient(to right, rgba(0, 128, 255, 0), rgba(0, 128, 255, 0.9)),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+    }
+    
+    .multi-colored-2 {
+      background: 
+        linear-gradient(45deg, rgba(255, 0, 0, 0.7) 0%, rgba(255, 0, 0, 0) 40%),
+        linear-gradient(135deg, rgba(0, 255, 0, 0.7) 0%, rgba(0, 255, 0, 0) 40%),
+        linear-gradient(225deg, rgba(0, 0, 255, 0.7) 0%, rgba(0, 0, 255, 0) 40%),
+        linear-gradient(315deg, rgba(255, 255, 0, 0.7) 0%, rgba(255, 255, 0, 0) 40%),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+    }
+    
+    .radial-gradient {
+      background: 
+        radial-gradient(circle at center, rgba(255, 0, 128, 0.9) 0%, rgba(255, 0, 128, 0) 50%),
+        radial-gradient(circle at bottom right, rgba(0, 128, 255, 0.9) 0%, rgba(0, 128, 255, 0) 50%),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+    }
+    
+    /* 2. Blend Modes */
+    .blend-multiply {
+      background: 
+        linear-gradient(to right, rgba(255, 0, 128, 0.7), rgba(0, 128, 255, 0.7)),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+      background-blend-mode: multiply;
+    }
+    
+    .blend-screen {
+      background: 
+        linear-gradient(to right, rgba(255, 0, 128, 0.7), rgba(0, 128, 255, 0.7)),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+      background-blend-mode: screen;
+    }
+    
+    .blend-overlay {
+      background: 
+        linear-gradient(to right, rgba(255, 0, 128, 0.7), rgba(0, 128, 255, 0.7)),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+      background-blend-mode: overlay;
+    }
+    
+    .blend-color-dodge {
+      background: 
+        linear-gradient(to right, rgba(255, 0, 128, 0.7), rgba(0, 128, 255, 0.7)),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+      background-blend-mode: color-dodge;
+    }
+    
+    /* 3. Animated Gradients */
+    @keyframes rotate-hue {
+      0% { filter: contrast(170%) brightness(1000%) hue-rotate(0deg); }
+      100% { filter: contrast(170%) brightness(1000%) hue-rotate(360deg); }
+    }
+    
+    .animated-hue {
+      background: 
+        linear-gradient(to right, rgba(255, 0, 128, 0.7), rgba(0, 128, 255, 0.7)),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      background-blend-mode: overlay;
+      animation: rotate-hue 10s linear infinite;
+    }
+    
+    @keyframes move-gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .animated-position {
+      background: 
+        linear-gradient(90deg, rgba(255, 0, 128, 0.7), rgba(0, 128, 255, 0.7), rgba(255, 0, 128, 0.7)),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      background-size: 200% 100%, 100% 100%;
+      filter: contrast(170%) brightness(1000%);
+      background-blend-mode: overlay;
+      animation: move-gradient 15s ease infinite;
+    }
+    
+    /* 4. Text and UI Elements */
+    .text-container {
+      height: auto !important;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .grainy-text {
+      font-size: 48px;
+      font-weight: 900;
+      background: linear-gradient(to right, #f00, #00f);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: contrast(170%) brightness(150%);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .grainy-text::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+      z-index: -1;
+    }
+    
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    
+    .grainy-button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      background: 
+        linear-gradient(to right, rgba(255, 0, 128, 0.7), rgba(0, 128, 255, 0.7)),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(800%);
+      background-blend-mode: overlay;
+      transition: transform 0.2s, filter 0.2s;
+    }
+    
+    .grainy-button:hover {
+      transform: scale(1.05);
+      filter: contrast(190%) brightness(900%);
+    }
+    
+    /* 5. Vignette/Spotlight effects */
+    .vignette {
+      position: relative;
+      background: 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+    }
+    
+    .vignette::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at center, transparent 20%, rgba(0, 0, 0, 0.8) 100%);
+      pointer-events: none;
+    }
+    
+    .spotlight {
+      position: relative;
+      background: 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      filter: contrast(170%) brightness(1000%);
+    }
+    
+    .spotlight::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.8) 0%, transparent 50%),
+        linear-gradient(to bottom, rgba(255, 0, 128, 0.5), rgba(0, 128, 255, 0.5));
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+    
+    /* 6. Layered Noise with Different Frequencies */
+    .layered-noise {
+      background: 
+        linear-gradient(45deg, rgba(255, 0, 128, 0.7), rgba(0, 128, 255, 0.7)),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter1'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter1)'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.3' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter2)'/%3E%3C/svg%3E");
+      background-blend-mode: overlay, multiply;
+      filter: contrast(170%) brightness(800%);
+    }
+    
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #1a1a1a;
+        color: #e0e0e0;
+      }
+      
+      pre {
+        background: #333;
+      }
+      
+      code {
+        background: #333;
+        color: #e0e0e0;
+      }
+      
+      h2 {
+        border-bottom-color: #444;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Advanced SVG Noise Gradient Techniques</h1>
+    
+    <section class="demo-section">
+      <h2>1. Multi-colored Grainy Gradients</h2>
+      <p>These examples show how to transition between different colored grainy sections by layering multiple gradients with strategic transparency.</p>
+      
+      <div class="demo-grid">
+        <div class="demo-box multi-colored-1">
+          <div class="demo-label">Horizontal Gradient Transition</div>
+        </div>
+        
+        <div class="demo-box multi-colored-2">
+          <div class="demo-label">Multi-Directional Gradients</div>
+        </div>
+        
+        <div class="demo-box radial-gradient">
+          <div class="demo-label">Radial Gradients</div>
+        </div>
+      </div>
+      
+      <pre>/* Horizontal Gradient Transition */
+.multi-colored-1 {
+  background: 
+    linear-gradient(to right, rgba(255, 0, 128, 0.9), rgba(255, 0, 128, 0)),
+    linear-gradient(to right, rgba(0, 128, 255, 0), rgba(0, 128, 255, 0.9)),
+    url("path/to/noise.svg");
+  filter: contrast(170%) brightness(1000%);
+}
+
+/* Multi-Directional Gradients */
+.multi-colored-2 {
+  background: 
+    linear-gradient(45deg, rgba(255, 0, 0, 0.7) 0%, rgba(255, 0, 0, 0) 40%),
+    linear-gradient(135deg, rgba(0, 255, 0, 0.7) 0%, rgba(0, 255, 0, 0) 40%),
+    linear-gradient(225deg, rgba(0, 0, 255, 0.7) 0%, rgba(0, 0, 255, 0) 40%),
+    linear-gradient(315deg, rgba(255, 255, 0, 0.7) 0%, rgba(255, 255, 0, 0) 40%),
+    url("path/to/noise.svg");
+  filter: contrast(170%) brightness(1000%);
+}
+
+/* Radial Gradients */
+.radial-gradient {
+  background: 
+    radial-gradient(circle at center, rgba(255, 0, 128, 0.9) 0%, rgba(255, 0, 128, 0) 50%),
+    radial-gradient(circle at bottom right, rgba(0, 128, 255, 0.9) 0%, rgba(0, 128, 255, 0) 50%),
+    url("path/to/noise.svg");
+  filter: contrast(170%) brightness(1000%);
+}</pre>
+    </section>
+    
+    <section class="demo-section">
+      <h2>2. Blend Modes for Different Effects</h2>
+      <p>CSS blend modes can significantly alter how the gradients interact with the noise texture, creating unique visual effects.</p>
+      
+      <div class="demo-grid">
+        <div class="demo-box blend-multiply">
+          <div class="demo-label">Multiply</div>
+        </div>
+        
+        <div class="demo-box blend-screen">
+          <div class="demo-label">Screen</div>
+        </div>
+        
+        <div class="demo-box blend-overlay">
+          <div class="demo-label">Overlay</div>
+        </div>
+        
+        <div class="demo-box blend-color-dodge">
+          <div class="demo-label">Color Dodge</div>
+        </div>
+      </div>
+      
+      <pre>/* Base styles shared by all examples */
+.blend-example {
+  background: 
+    linear-gradient(to right, rgba(255, 0, 128, 0.7), rgba(0, 128, 255, 0.7)),
+    url("path/to/noise.svg");
+  filter: contrast(170%) brightness(1000%);
+}
+
+/* Different blend modes */
+.blend-multiply {
+  background-blend-mode: multiply;
+}
+
+.blend-screen {
+  background-blend-mode: screen;
+}
+
+.blend-overlay {
+  background-blend-mode: overlay;
+}
+
+.blend-color-dodge {
+  background-blend-mode: color-dodge;
+}</pre>
+    </section>
+    
+    <section class="demo-section">
+      <h2>3. Animated Grainy Gradients</h2>
+      <p>Add movement to your grainy gradients using CSS animations for more dynamic visuals.</p>
+      
+      <div class="demo-grid">
+        <div class="demo-box animated-hue">
+          <div class="demo-label">Hue Rotation</div>
+        </div>
+        
+        <div class="demo-box animated-position">
+          <div class="demo-label">Moving Gradient</div>
+        </div>
+      </div>
+      
+      <pre>/* Hue Rotation Animation */
+@keyframes rotate-hue {
+  0% { filter: contrast(170%) brightness(1000%) hue-rotate(0deg); }
+  100% { filter: contrast(170%) brightness(1000%) hue-rotate(360deg); }
+}
+
+.animated-hue {
+  background: 
+    linear-gradient(to right, rgba(255, 0, 128, 0.7), rgba(0, 128, 255, 0.7)),
+    url("path/to/noise.svg");
+  background-blend-mode: overlay;
+  animation: rotate-hue 10s linear infinite;
+}
+
+/* Moving Gradient Animation */
+@keyframes move-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-position {
+  background: 
+    linear-gradient(90deg, rgba(255, 0, 128, 0.7), rgba(0, 128, 255, 0.7), rgba(255, 0, 128, 0.7)),
+    url("path/to/noise.svg");
+  background-size: 200% 100%, 100% 100%;
+  filter: contrast(170%) brightness(1000%);
+  background-blend-mode: overlay;
+  animation: move-gradient 15s ease infinite;
+}</pre>
+    </section>
+    
+    <section class="demo-section">
+      <h2>4. Grainy Gradients for Text and UI Elements</h2>
+      <p>Apply the grainy gradient technique to text and interactive elements for a unique visual style.</p>
+      
+      <div class="demo-grid">
+        <div class="demo-box text-container">
+          <div class="grainy-text">GRAINY TEXT</div>
+        </div>
+        
+        <div class="demo-box text-container">
+          <div class="button-container">
+            <button class="grainy-button">Click Me</button>
+            <button class="grainy-button">Sign Up</button>
+          </div>
+        </div>
+      </div>
+      
+      <pre>/* Grainy Text */
+.grainy-text {
+  font-size: 48px;
+  font-weight: 900;
+  background: linear-gradient(to right, #f00, #00f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: contrast(170%) brightness(150%);
+  position: relative;
+  z-index: 1;
+}
+
+.grainy-text::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("path/to/noise.svg");
+  mix-blend-mode: overlay;
+  z-index: -1;
+}
+
+/* Grainy Button */
+.grainy-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  background: 
+    linear-gradient(to right, rgba(255, 0, 128, 0.7), rgba(0, 128, 255, 0.7)),
+    url("path/to/noise.svg");
+  filter: contrast(170%) brightness(800%);
+  background-blend-mode: overlay;
+  transition: transform 0.2s, filter 0.2s;
+}
+
+.grainy-button:hover {
+  transform: scale(1.05);
+  filter: contrast(190%) brightness(900%);
+}</pre>
+    </section>
+    
+    <section class="demo-section">
+      <h2>5. Vignette and Spotlight Effects</h2>
+      <p>Create dramatic lighting effects by combining grainy gradients with vignettes or spotlights.</p>
+      
+      <div class="demo-grid">
+        <div class="demo-box vignette">
+          <div class="demo-label">Vignette Effect</div>
+        </div>
+        
+        <div class="demo-box spotlight">
+          <div class="demo-label">Spotlight Effect</div>
+        </div>
+      </div>
+      
+      <pre>/* Vignette Effect */
+.vignette {
+  position: relative;
+  background: url("path/to/noise.svg");
+  filter: contrast(170%) brightness(1000%);
+}
+
+.vignette::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, transparent 20%, rgba(0, 0, 0, 0.8) 100%);
+  pointer-events: none;
+}
+
+/* Spotlight Effect */
+.spotlight {
+  position: relative;
+  background: url("path/to/noise.svg");
+  filter: contrast(170%) brightness(1000%);
+}
+
+.spotlight::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.8) 0%, transparent 50%),
+    linear-gradient(to bottom, rgba(255, 0, 128, 0.5), rgba(0, 128, 255, 0.5));
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}</pre>
+    </section>
+    
+    <section class="demo-section">
+      <h2>6. Layering Noise at Different Frequencies</h2>
+      <p>Combine multiple noise patterns with different frequencies to create more complex and organic textures.</p>
+      
+      <div class="demo-grid">
+        <div class="demo-box layered-noise">
+          <div class="demo-label">Layered Noise Textures</div>
+        </div>
+      </div>
+      
+      <pre>/* Layered Noise with Different Frequencies */
+.layered-noise {
+  background: 
+    linear-gradient(45deg, rgba(255, 0, 128, 0.7), rgba(0, 128, 255, 0.7)),
+    url("path/to/fine-noise.svg"),  /* Fine-grained noise (higher frequency) */
+    url("path/to/coarse-noise.svg"); /* Coarse-grained noise (lower frequency) */
+  background-blend-mode: overlay, multiply;
+  filter: contrast(170%) brightness(800%);
+}</pre>
+    </section>
+  </div>
+</body>
+</html>
