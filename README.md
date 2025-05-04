@@ -2,8 +2,6 @@
 
 SVG_Noise.py is a command-line tool that generates SVG noise patterns for creating beautiful grainy gradients in web design. This tool creates SVG files containing turbulence filters that can be directly referenced in CSS to achieve texture effects like grainy gradients, paper textures, and more.
 
-![SVG Noise Examples](https://placeholder-for-your-example-image.png)
-
 ## Table of Contents
 
 - [What is SVG Noise?](#what-is-svg-noise)
@@ -36,7 +34,7 @@ The core technique involves:
 
 1. Clone or download this repository:
    ```bash
-   git clone https://github.com/yourusername/svg-noise.git
+   git clone https://github.com/MushroomFleet/SVG-Noise-cli
    cd svg-noise
    ```
 
